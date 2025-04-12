@@ -12,7 +12,7 @@ async function storeAfstemning(afstemning, embedding) {
     if (!afstemning.id) {
       throw new Error('Missing id in afstemning');
     }
-  const { id, titel } = afstemning;
+  const { id, titel, titelkort, resume } = afstemning;
 
   // Ensure embedding is not null and is an array
   if (!embedding || !Array.isArray(embedding)) {
@@ -26,7 +26,9 @@ async function storeAfstemning(afstemning, embedding) {
     .insert({
       titel,
       embedding, // Assuming the embedding is properly handled here
-      afstemning_id: id,  // This is the original ID from the afstemning object
+      afstemning_id: id,
+      titelkort,  
+      resume   // now also stores titelkort and resume in Supabase. 
     })
     .single(); // Use .single() to ensure we're inserting one row
 

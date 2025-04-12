@@ -18,6 +18,8 @@ async function main() {
 
     const titel = afstemning.Sagstrin.Sag.titel;
     const id = afstemning.id;  // This is the original ID from the afstemning object
+    const titelkort = afstemning.Sagstrin.Sag.titelkort;
+    const resume = afstemning.Sagstrin.Sag.resume;
 
     // Log if id is missing
     if (!id) {
@@ -32,7 +34,7 @@ async function main() {
 
     // Generate embedding only if OpenAI is enabled
     if (openaiEnabled) {
-      embedding = await generateEmbedding(titel);
+      embedding = await generateEmbedding(titel); // need to figure out how to embed both titel, titelkort and resume. 
     } else {
       console.log('OpenAI API call is disabled, using empty embedding');
       // Provide a fallback (empty vector) if embedding is not generated
@@ -46,10 +48,10 @@ async function main() {
     }
 
     // Logging before calling storeAfstemning to track the data being passed
-    console.log('Storing afstemning:', { id, titel, embedding });
+    console.log('Storing afstemning:', { id, titel, titelkort, resume, embedding });
 
     // Store the afstemning in Supabase
-    await storeAfstemning({ id, titel }, embedding);
+    await storeAfstemning({ id, titel, titelkort, resume }, embedding);
   }
 }
 
