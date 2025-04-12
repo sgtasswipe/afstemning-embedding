@@ -34,11 +34,16 @@ async function main() {
 
     // Generate embedding only if OpenAI is enabled
     if (openaiEnabled) {
-      embedding = await generateEmbedding(titel); // need to figure out how to embed both titel, titelkort and resume. 
+        const combinedText = `
+  Titel: ${titel || ''}
+  Titelkort: ${titelkort || ''}
+  Resume: ${resume || ''}
+`;
+      embedding = await generateEmbedding(combinedText); // instead of embedding only titel, embeds a combined text of all relevant info. 
     } else {
       console.log('OpenAI API call is disabled, using empty embedding');
       // Provide a fallback (empty vector) if embedding is not generated
-      embedding = new Array(1536).fill(0);  // Assuming 1536-dimension embedding
+      embedding = new Array(1536).fill(0);  //  1536-dimension embedding
     }
 
     // Ensure embedding is an array and not null or undefined
