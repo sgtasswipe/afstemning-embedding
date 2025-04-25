@@ -23,7 +23,7 @@ This project fetches Danish parliamentary voting data (_afstemninger_) from the 
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/your-username/afstemninger-embedding.git
+git clone https://github.com/sgtasswipe/afstemninger-embedding.git
 cd afstemninger-embedding
 ```
 
