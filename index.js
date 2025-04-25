@@ -1,9 +1,9 @@
 const { storeAfstemning } = require('./storeToSupabase');
 const { generateEmbedding } = require('./embed');  // Assuming this file handles the OpenAI embedding
-const { fetchAfstemninger } = require('./fetchAfstemninger');  // Include the fetch function
+const { fetchAllAfstemninger } = require('./fetchAfstemninger');  // Include the fetch function
 
 async function main() {
-  const afstemninger = await fetchAfstemninger();
+  const afstemninger = await fetchAllAfstemninger();
 
   // Loop through the fetched afstemninger
   for (const afstemning of afstemninger) {
@@ -18,14 +18,9 @@ async function main() {
 
     const titel = afstemning.Sagstrin.Sag.titel;
     const id = afstemning.id;  // This is the original ID from the afstemning object
+    const typeid = afstemning.typeid;
     const titelkort = afstemning.Sagstrin.Sag.titelkort;
     const resume = afstemning.Sagstrin.Sag.resume;
-
-    // Log if id is missing
-    if (!id) {
-      console.error('Missing id for afstemning:', afstemning);
-      continue;  // Skip this entry if the id is missing
-    }
 
     let embedding = [];
 
@@ -53,10 +48,10 @@ async function main() {
     }
 
     // Logging before calling storeAfstemning to track the data being passed
-    console.log('Storing afstemning:', { id, titel, titelkort, resume, embedding });
+    console.log('Storing afstemning:', { id, typeid, titelkort, resume, embedding });
 
     // Store the afstemning in Supabase
-    await storeAfstemning({ id, titel, titelkort, resume }, embedding);
+    await storeAfstemning({ id, typeid, titel, titelkort, resume }, embedding);
   }
 }
 

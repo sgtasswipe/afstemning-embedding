@@ -26,6 +26,7 @@ async function searchVector(queryText) {
   data.forEach((row, i) => {
     console.log(`\n#${i + 1}`);
     console.log('ID:', row.id);
+    console.log('Type_ID', row.type_id)
     console.log('Titel:', row.titel);
     console.log('Titelkort:', row.titelkort);
     console.log('Score:', row.similarity.toFixed(4));
@@ -34,4 +35,4 @@ async function searchVector(queryText) {
 }
 
 // test search
-searchVector('palæstina');
+searchVector('sundhed');
