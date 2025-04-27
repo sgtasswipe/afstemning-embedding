@@ -9,7 +9,7 @@ async function fetchAfstemninger(page = 0, pageSize = 100) {
   return res.data.value;
 }
 
-async function fetchAllAfstemninger(skipLimit = 7000, pageSize = 100) {
+async function fetchAllAfstemninger(skipLimit = 10000, pageSize = 100) {
   const all = [];
 
   for (let skip = 0; skip <= skipLimit; skip += pageSize) {

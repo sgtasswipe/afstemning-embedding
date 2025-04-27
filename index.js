@@ -21,6 +21,8 @@ async function main() {
     const typeid = afstemning.typeid;
     const titelkort = afstemning.Sagstrin.Sag.titelkort;
     const resume = afstemning.Sagstrin.Sag.resume;
+    const sagstrinid = afstemning.Sagstrin.id;  
+    const sagid = afstemning.Sagstrin.Sag.id;  
 
     let embedding = [];
 
@@ -51,7 +53,7 @@ async function main() {
     console.log('Storing afstemning:', { id, typeid, titelkort, resume, embedding });
 
     // Store the afstemning in Supabase
-    await storeAfstemning({ id, typeid, titel, titelkort, resume }, embedding);
+    await storeAfstemning({ id, typeid, titel, titelkort, resume, sagstrinid, sagid }, embedding);
   }
 }
 
