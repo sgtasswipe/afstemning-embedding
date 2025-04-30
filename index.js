@@ -23,6 +23,7 @@ async function main() {
     const resume = afstemning.Sagstrin.Sag.resume;
     const sagstrinid = afstemning.Sagstrin.id;  
     const sagid = afstemning.Sagstrin.Sag.id;  
+    const dato = afstemning.Sagstrin.Sag.opdateringsdato
 
     let embedding = [];
 
@@ -53,7 +54,7 @@ async function main() {
     console.log('Storing afstemning:', { id, typeid, titelkort, resume, embedding });
 
     // Store the afstemning in Supabase
-    await storeAfstemning({ id, typeid, titel, titelkort, resume, sagstrinid, sagid }, embedding);
+    await storeAfstemning({ id, typeid, titel, titelkort, resume, sagstrinid, sagid, dato }, embedding);
   }
 }
 

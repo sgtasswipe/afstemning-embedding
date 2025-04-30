@@ -12,7 +12,7 @@ async function storeAfstemning(afstemning, embedding) {
     if (!afstemning.id) {
       throw new Error('Missing id in afstemning');
     }
-  const { id, typeid, titel, titelkort, resume, sagstrinid, sagid } = afstemning;
+  const { id, typeid, titel, titelkort, resume, sagstrinid, sagid, opdateringsdato} = afstemning;
 
   // Ensure embedding is not null and is an array
   if (!embedding || !Array.isArray(embedding)) {
@@ -32,6 +32,7 @@ async function storeAfstemning(afstemning, embedding) {
       resume, 
       sagstrin_id: sagstrinid,
       sag_id: sagid,  
+      dato: opdateringsdato,
     })
     .single(); // Use .single() to ensure we're inserting one row
 
