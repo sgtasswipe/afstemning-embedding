@@ -1,5 +1,6 @@
-const { generateEmbedding } = require('./embed');
+const { generateEmbedding } = require('./danishBertEmbedder');  //change according to embedding model used
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -11,9 +12,9 @@ async function searchVector(queryText) {
 
   const queryEmbedding = await generateEmbedding(queryText);
 
-  const { data, error } = await supabase.rpc('match_afstemninger', {
+  const { data, error } = await supabase.rpc('match_afstemninger_bert', { //remove _bert if referencing the original table
     query_embedding: queryEmbedding,
-    match_threshold: 0.75,
+    match_threshold: 0.25,
     match_count: 5
   });
 
@@ -35,4 +36,4 @@ async function searchVector(queryText) {
 }
 
 // test search
-searchVector('sundhed');
+searchVector('atomkraft');

@@ -1,5 +1,5 @@
 const { storeAfstemning } = require('./storeToSupabase');
-const { generateEmbedding } = require('./embed');  // Assuming this file handles the OpenAI embedding
+const { generateEmbedding } = require('./danishBertEmbedder');  //change according to embedding model used
 const { fetchAllAfstemninger } = require('./fetchAfstemninger');  // Include the fetch function
 
 async function main() {

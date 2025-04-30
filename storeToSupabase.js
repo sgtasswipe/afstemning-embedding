@@ -22,7 +22,7 @@ async function storeAfstemning(afstemning, embedding) {
 
   // Insert into Supabase
   const { data, error } = await supabase
-    .from('afstemninger')
+    .from('afstemninger_bert') //change according to the relevant table
     .insert({
       titel,
       embedding, // Assuming the embedding is properly handled here
