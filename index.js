@@ -1,6 +1,7 @@
 const { storeAfstemning } = require('./storeToSupabase');
-const { generateEmbedding } = require('./embed');  // Assuming this file handles the OpenAI embedding
+//const { generateEmbedding } = require('./embed');  // Assuming this file handles the OpenAI embedding
 const { fetchAfstemninger } = require('./fetchAfstemninger');  // Include the fetch function
+const { generateEmbedding } = require('./embedWithFlask');  // Uses your Flask server
 
 async function main() {
   const afstemninger = await fetchAfstemninger();

@@ -3,7 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // use anon if you're testing
+  process.env.SUPABASE_SERVICE_ROLE_KEY 
 );
 
 async function searchVector(queryText) {
@@ -13,7 +13,7 @@ async function searchVector(queryText) {
 
   const { data, error } = await supabase.rpc('match_afstemninger', {
     query_embedding: queryEmbedding,
-    match_threshold: 0.75,
+    match_threshold: 0.80,
     match_count: 5
   });
 
@@ -34,4 +34,4 @@ async function searchVector(queryText) {
 }
 
 // test search
-searchVector('palæstina');
+searchVector('abort');
