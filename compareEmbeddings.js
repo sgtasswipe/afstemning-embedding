@@ -1,4 +1,5 @@
 const { generateEmbedding } = require("./danishBertEmbedder");
+const {generateNewEmbedding} = require("./fineTunedBertEmbedder")
 const { createClient } = require("@supabase/supabase-js");
 const cosineSimilarity = require("compute-cosine-similarity"); // ✅ new import
 require("dotenv").config();
@@ -9,7 +10,7 @@ const supabase = createClient(
 );
 
 const afstemningId = 10181;
-
+const queryText="abort"
 // Fetch afstemning embedding by ID
 async function fetchEmbeddingById(id) {
   const { data, error } = await supabase
@@ -44,7 +45,7 @@ async function searchVector(queryText, afstemningId) {
   const queryEmbedding = await generateEmbedding(queryText);
   console.log("Embedding dimensions:", queryEmbedding.length);
 
-  const newQueryEmbedding = await generateNewAfstemningEmbedding(afstemningId);
+  const newQueryEmbedding = await generateNewEmbedding(queryText);
   console.log("Embedding dimensions:", queryEmbedding.length);
 
   // 2️⃣ Fetch afstemning embedding
@@ -66,7 +67,7 @@ async function searchVector(queryText, afstemningId) {
       Resume: ${resume || ""}
     `;
 
-    const newEmbedding = await generateEmbedding(combinedText);
+    const newEmbedding = await generateNewEmbedding(combinedText);
     return { embedding: newEmbedding };
   }
 
@@ -84,4 +85,4 @@ async function searchVector(queryText, afstemningId) {
 }
 
 // 🔍 Test search
-searchVector("abort", afstemningId);
+searchVector(queryText, afstemningId);
