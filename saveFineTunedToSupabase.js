@@ -1,4 +1,3 @@
-
 const { generateNewEmbedding } = require("./fineTunedBertEmbedder");
 const { createClient } = require("@supabase/supabase-js");
 
@@ -9,11 +8,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-fetchAfstemninger()
+fetchAfstemninger();
 async function fetchAfstemninger() {
-    const { data, error } = await supabase
-  .from("golden_standard")
-  .select(`
+  const { data, error } = await supabase.from("golden_standard").select(`
     afstemning_id,
     subject,
     afstemninger_bert (
@@ -23,44 +20,68 @@ async function fetchAfstemninger() {
     )
   `);
 
-if (error) {
-  console.error("Error fetching data:", error);
-  return;
-  
-}
-for (const row of data) {
+  if (error) {
+    console.error("Error fetching data:", error);
+    return;
+  }
+  for (const row of data) {
     const afstemning = row.afstemninger_bert;
     const subject = row.subject;
-  
+
     if (afstemning) {
-      const afstemningEmbedding = await generateNewAfstemningEmbedding(afstemning);
+      const afstemningEmbedding = await generateNewAfstemningEmbedding(
+        afstemning
+      );
       console.log("Afstemning embedding:", afstemningEmbedding);
+      saveAfstemningEmbedding(row.afstemning_id, afstemningEmbedding);
     }
-  
+
     if (subject) {
       const subjectEmbedding = await generateNewSubjectEmbedding(subject);
       console.log("Subject embedding:", subjectEmbedding);
+      saveSubjectEmbedding(row.afstemning_id, subjectEmbedding);
     }
-    saveToSupbase(subjectEmbedding,afstemningEmbedding)
   }
-  
-
 }
- async function saveToSupbase(subjectEmbedding,afstemningEmbedding){
-   const {data,error}=await supabase.from("golden_standard").insert({subject_vector_after: subjectEmbedding ,afstemning_vector_after:afstemningEmbedding})
 
+// Save subject embedding
+async function saveSubjectEmbedding(id, subjectEmbedding) {
+  const { data, error } = await supabase
+    .from("golden_standard")
+    .update({ subject_vector_after: subjectEmbedding })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error saving subject embedding:", error);
+  } else {
+    console.log("Subject embedding saved:", data);
+  }
+}
+
+// Save afstemning embedding
+async function saveAfstemningEmbedding(id, afstemningEmbedding) {
+  const { data, error } = await supabase
+    .from("golden_standard")
+    .update({ afstemning_vector_after: afstemningEmbedding })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error saving afstemning embedding:", error);
+  } else {
+    console.log("Afstemning embedding saved:", data);
+  }
 }
 
 async function generateNewSubjectEmbedding(subject) {
-    return await generateNewEmbedding(subject);
+  return await generateNewEmbedding(subject);
 }
 async function generateNewAfstemningEmbedding(afstemning) {
-    const { titel, titelkort, resume } = afstemning;
-    const combinedText = `
+  const { titel, titelkort, resume } = afstemning;
+  const combinedText = `
       Titel: ${titel || ""}
       Titelkort: ${titelkort || ""}
       Resume: ${resume || ""}
     `;
-    const newEmbedding = await generateNewEmbedding(combinedText);
-    return newEmbedding;
+  const newEmbedding = await generateNewEmbedding(combinedText);
+  return newEmbedding;
 }
