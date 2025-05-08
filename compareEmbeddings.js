@@ -1,7 +1,7 @@
 const { generateEmbedding } = require("./danishBertEmbedder");
-const {generateNewEmbedding} = require("./fineTunedBertEmbedder")
+const { generateNewEmbedding } = require("./fineTunedBertEmbedder");
 const { createClient } = require("@supabase/supabase-js");
-const cosineSimilarity = require("compute-cosine-similarity"); // ✅ new import
+const cosineSimilarity = require("compute-cosine-similarity");
 require("dotenv").config();
 
 const supabase = createClient(
@@ -10,7 +10,8 @@ const supabase = createClient(
 );
 
 const afstemningId = 10181;
-const queryText="abort"
+const queryText = "abort";
+
 // Fetch afstemning embedding by ID
 async function fetchEmbeddingById(id) {
   const { data, error } = await supabase
@@ -26,63 +27,68 @@ async function fetchEmbeddingById(id) {
 
   let embeddingArray;
   try {
-    embeddingArray = JSON.parse(data.embedding); // Parse stringified JSON array
+    embeddingArray = JSON.parse(data.embedding);
   } catch (parseError) {
     console.error("Error parsing embedding data:", parseError);
     return null;
   }
 
-  console.log("Fetched afstemning embedding:", embeddingArray);
-  console.log("Type of embedding:", Array.isArray(embeddingArray)); // Should print true
-  return { id: data.id, embedding: embeddingArray }; // ✅ return as object with id
+  return { ...data, embedding: embeddingArray };
 }
 
-// Compare search query embedding to afstemning embedding
+// Generate new afstemning embedding using fine-tuned model
+async function generateNewAfstemningEmbedding(afstemning) {
+  const { titel, titelkort, resume } = afstemning;
+  const combinedText = `
+    Titel: ${titel || ""}
+    Titelkort: ${titelkort || ""}
+    Resume: ${resume || ""}
+  `;
+  const newEmbedding = await generateNewEmbedding(combinedText);
+  return newEmbedding;
+}
+
+// Compare query embedding to both old and new afstemning embeddings
 async function searchVector(queryText, afstemningId) {
   console.log(`Embedding query: "${queryText}"`);
 
-  // 1️⃣ Embed the search query
+  // Embed query with both models
   const queryEmbedding = await generateEmbedding(queryText);
-  console.log("Embedding dimensions:", queryEmbedding.length);
-
   const newQueryEmbedding = await generateNewEmbedding(queryText);
-  console.log("Embedding dimensions:", queryEmbedding.length);
 
-  // 2️⃣ Fetch afstemning embedding
+  // Fetch afstemning from DB
   const afstemning = await fetchEmbeddingById(afstemningId);
   if (!afstemning) {
     console.error("Afstemning not found.");
     return;
   }
 
-  // Generate embedding with new model
-  async function generateNewAfstemningEmbedding(afstemningId) {
-    const afstemning = await fetchAfstemningById(afstemningId);
-    if (!afstemning) return null;
+  // Generate new embedding for afstemning
+  const newAfstemningEmbedding = await generateNewAfstemningEmbedding(
+    afstemning
+  );
 
-    const { titel, titelkort, resume } = afstemning;
-    const combinedText = `
-      Titel: ${titel || ""}
-      Titelkort: ${titelkort || ""}
-      Resume: ${resume || ""}
-    `;
-
-    const newEmbedding = await generateNewEmbedding(combinedText);
-    return { embedding: newEmbedding };
-  }
-
-  // 3️⃣ Compare embeddings
+  // Compare embeddings
   const beforeSimilarity = cosineSimilarity(
     queryEmbedding,
     afstemning.embedding
   );
-  const afterSimilarity = cosineSimilarity(newQueryEmbedding, newEmbedding);
+  const afterSimilarity = cosineSimilarity(
+    newQueryEmbedding,
+    newAfstemningEmbedding
+  );
 
-  // 4️⃣ Output result
-
-  console.log("Cosine similarity before:", beforeSimilarity.toFixed(4));
-  console.log("Cosine similarity after:", afterSimilarity.toFixed(4));
+  // Output results
+  console.log(`\nAfstemning ID: ${afstemning.id}`);
+  console.log(
+    "Cosine similarity before (old model):",
+    beforeSimilarity.toFixed(4)
+  );
+  console.log(
+    "Cosine similarity after (fine-tuned model):",
+    afterSimilarity.toFixed(4)
+  );
 }
 
-// 🔍 Test search
+// Run test search
 searchVector(queryText, afstemningId);
