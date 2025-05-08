@@ -9,7 +9,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const afstemningId = 10181;
+const afstemningId = 5165;
 const queryText = "abort";
 
 // Fetch afstemning embedding by ID
