@@ -49,12 +49,12 @@ async function saveSubjectEmbedding(id, subjectEmbedding) {
   const { data, error } = await supabase
     .from("golden_standard")
     .update({ subject_vector_after: subjectEmbedding })
-    .eq("id", id);
+    .eq("afstemning_id", id);
 
   if (error) {
     console.error("Error saving subject embedding:", error);
   } else {
-    console.log("Subject embedding saved:", data);
+    console.log("Subject embedding saved:", id);
   }
 }
 
@@ -63,12 +63,12 @@ async function saveAfstemningEmbedding(id, afstemningEmbedding) {
   const { data, error } = await supabase
     .from("golden_standard")
     .update({ afstemning_vector_after: afstemningEmbedding })
-    .eq("id", id);
+    .eq("afstemning_id", id);
 
   if (error) {
     console.error("Error saving afstemning embedding:", error);
   } else {
-    console.log("Afstemning embedding saved:", data);
+    console.log("Afstemning embedding saved:", id);
   }
 }
 
