@@ -1,4 +1,4 @@
-const { generateNewEmbedding } = require("./fineTunedBertEmbedder");
+const { generateNewEmbedding } = require("./embedders/fineTunedBertEmbedder");
 const { createClient } = require("@supabase/supabase-js");
 
 require("dotenv").config();

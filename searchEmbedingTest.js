@@ -1,4 +1,4 @@
-const { generateEmbedding } = require("./danishBertEmbedder"); //change according to embedding model used
+const { generateEmbedding } = require("./embedders/danishBertEmbedder"); //change according to embedding model used
 const { createClient } = require("@supabase/supabase-js");
 require("dotenv").config();
 
@@ -14,15 +14,12 @@ async function searchVector(queryText) {
   console.log(queryEmbedding);
   console.log("Embedding dimensions:", queryEmbedding.length); // Should be 768
 
-  const { data, error } = await supabase.rpc(
-    "match_afstemninger_golden_standard",
-    {
-      //remove _bert if referencing the original table
-      query_embedding: queryEmbedding,
-      match_threshold: 0.25,
-      match_count: 5,
-    }
-  );
+  const { data, error } = await supabase.rpc("match_afstemninger_bert", {
+    //remove _bert if referencing the original table
+    query_embedding: queryEmbedding,
+    match_threshold: 0.25,
+    match_count: 5,
+  });
 
   if (error) {
     console.error("Supabase RPC Error:", error);
@@ -43,4 +40,4 @@ async function searchVector(queryText) {
 }
 
 // test search
-searchVector("abort");
+searchVector("ytringsfrihed");
