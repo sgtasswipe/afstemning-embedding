@@ -1,5 +1,4 @@
 const { generateEmbedding } = require("./embedders/danishBertEmbedder");
-const { generateNewEmbedding } = require("./embedders/fineTunedBertEmbedder");
 const { createClient } = require("@supabase/supabase-js");
 const cosineSimilarity = require("compute-cosine-similarity");
 require("dotenv").config();

@@ -4,10 +4,10 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function generateEmbedding(text) {
+async function generateEmbedding(text, port) {
   try {
     await delay(1000);
-    const response = await axios.post('http://localhost:5000/embed', {
+    const response = await axios.post(`http://localhost:${port}/embed`, {
       texts: [text],
     });
 
