@@ -1,4 +1,4 @@
-const { generateNewEmbedding } = require("./embedders/fineTunedBertEmbedder");
+const { generateEmbedding } = require("./embedders/danishBertEmbedder");
 const { createClient } = require("@supabase/supabase-js");
 
 require("dotenv").config();
@@ -10,39 +10,33 @@ const supabase = createClient(
 
 fetchAfstemninger();
 async function fetchAfstemninger() {
-  const { data, error } = await supabase.from("golden_standard").select(`
-    afstemning_id,
-    subject,
-    afstemninger_bert (
+  const { data, error } = await supabase
+  .from("afstemninger_bert")
+  .select(`
+      id,
       titel,
       titelkort,
       resume
-    )
-  `);
+  `)
+  .is("embedding_v3", null);
 
   if (error) {
     console.error("Error fetching data:", error);
     return;
   }
   for (const row of data) {
-    const afstemning = row.afstemninger_bert;
-    const subject = row.subject;
-
-    if (afstemning) {
-      const afstemningEmbedding = await generateNewAfstemningEmbedding(
-        afstemning
-      );
-      console.log("Afstemning embedding:", afstemningEmbedding);
-      saveAfstemningEmbedding(row.afstemning_id, afstemningEmbedding);
+  const afstemningEmbedding = await generateNewAfstemningEmbedding(row);
+  console.log("Afstemning embedding:", afstemningEmbedding);
+  await saveAfstemningEmbedding(row.id, afstemningEmbedding);
     }
 
-    if (subject) {
+    /* if (subject) {
       const subjectEmbedding = await generateNewSubjectEmbedding(subject);
       console.log("Subject embedding:", subjectEmbedding);
       saveSubjectEmbedding(row.afstemning_id, subjectEmbedding);
-    }
+    } */
   }
-}
+
 
 // Save subject embedding
 async function saveSubjectEmbedding(id, subjectEmbedding) {
@@ -61,9 +55,9 @@ async function saveSubjectEmbedding(id, subjectEmbedding) {
 // Save afstemning embedding
 async function saveAfstemningEmbedding(id, afstemningEmbedding) {
   const { data, error } = await supabase
-    .from("golden_standard")
-    .update({ afstemning_vector_after: afstemningEmbedding })
-    .eq("afstemning_id", id);
+    .from("afstemninger_bert")
+    .update({ embedding_v3: afstemningEmbedding })
+    .eq("id", id);
 
   if (error) {
     console.error("Error saving afstemning embedding:", error);
@@ -73,8 +67,9 @@ async function saveAfstemningEmbedding(id, afstemningEmbedding) {
 }
 
 async function generateNewSubjectEmbedding(subject) {
-  return await generateNewEmbedding(subject);
+  return await generateEmbedding(subject);
 }
+
 async function generateNewAfstemningEmbedding(afstemning) {
   const { titel, titelkort, resume } = afstemning;
   const combinedText = `
@@ -82,6 +77,6 @@ async function generateNewAfstemningEmbedding(afstemning) {
       Titelkort: ${titelkort || ""}
       Resume: ${resume || ""}
     `;
-  const newEmbedding = await generateNewEmbedding(combinedText);
+  const newEmbedding = await generateEmbedding(combinedText, 5003); //change according to model
   return newEmbedding;
 }

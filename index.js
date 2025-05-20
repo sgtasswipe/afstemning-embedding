@@ -37,7 +37,7 @@ async function main() {
   Titelkort: ${titelkort || ''}
   Resume: ${resume || ''}
 `;
-      embedding = await generateEmbedding(combinedText); // instead of embedding only titel, embeds a combined text of all relevant info. 
+      embedding = await generateEmbedding(combinedText); 
     } else {
       console.log('OpenAI API call is disabled, using empty embedding');
       // Provide a fallback (empty vector) if embedding is not generated
