@@ -1,6 +1,6 @@
-//TO DO: add non trained model to search
 
 const { generateEmbedding } = require("./embedders/danishBertEmbedder");
+const { generateAdaEmbedding } = require("./embedders/ada2002Embedder");
 const { createClient } = require("@supabase/supabase-js");
 const xlsx = require("xlsx");
 require("dotenv").config();
@@ -12,6 +12,7 @@ const supabase = createClient(
 
 // Define ports and matching vector_choice values
 const MODELS = [
+  { name: "ada-2002", vector_choice: "ada" },
   { name: "Domain Fine-Tuned", port: 5001, vector_choice: "ds" },
   { name: "Fine-Tuned 2", port: 5003, vector_choice: "v3" },
 ];
@@ -20,9 +21,19 @@ const MODELS = [
 async function runSearch(queryText, model) {
   console.log(`Embedding query with ${model.name} (port ${model.port})`);
 
-  const queryEmbedding = await generateEmbedding(queryText, model.port);
+    let queryEmbedding;
+  if (model.name === "ada-2002") {
+    queryEmbedding = await generateAdaEmbedding(queryText);
+  } else {
+    queryEmbedding = await generateEmbedding(queryText, model.port);
+  }
 
-  const { data, error } = await supabase.rpc("search_results_all", {
+ const functionName =
+    model.name === "ada-2002"
+      ? "search_results_all_ada"
+      : "search_results_all";
+
+  const { data, error } = await supabase.rpc(functionName, {
     query_embedding: queryEmbedding,
     match_threshold: 0.25,
     match_count: 10,
