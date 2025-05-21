@@ -1,5 +1,7 @@
 const fs = require("fs");
-const { generateEmbedding } = require("./embedders/danishBertEmbedder");
+const {
+  generateAdaEmbedding: generateEmbedding,
+} = require("./embedders/ada2002Embedder");
 const { createClient } = require("@supabase/supabase-js");
 require("dotenv").config();
 
@@ -17,14 +19,14 @@ async function searchVector(queryText) {
 
   writeLog(`\n---\nEmbedding query: "${queryText}"`);
 
-  const queryEmbedding = await generateEmbedding(queryText, 5003);
+  const queryEmbedding = await generateEmbedding(queryText);
   writeLog(`Embedding dimensions: ${queryEmbedding.length}`);
 
-  const { data, error } = await supabase.rpc("search_results_dynamic", {
+  const { data, error } = await supabase.rpc("search_results_dynamic_ada", {
     query_embedding: queryEmbedding,
     match_threshold: 0.25,
     match_count: 100,
-    vector_choice: "after_4",
+    vector_choice: "ada",
   });
 
   if (error) {

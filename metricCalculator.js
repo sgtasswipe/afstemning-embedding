@@ -1,4 +1,5 @@
 const { generateEmbedding } = require("./embedders/danishBertEmbedder");
+const { generateAdaEmbedding } = require("./embedders/ada2002Embedder");
 const { createClient } = require("@supabase/supabase-js");
 const xlsx = require("xlsx");
 require("dotenv").config();
@@ -9,10 +10,11 @@ const supabase = createClient(
 );
 
 const MODELS = [
-  { name: "Standard BERT", port: 5000, vector_choice: "after" },
-  { name: "Domain Fine-Tuned", port: 5001, vector_choice: "after_2" },
-  { name: "Fine-Tuned", port: 5002, vector_choice: "after_3" },
-  { name: "Fine-Tuned 2", port: 5003, vector_choice: "after_4" },
+  { name: "Standard BERT", port: 5000, vector_choice: "untrained" },
+  { name: "ada-2002", vector_choice: "ada" },
+  { name: "Domain Fine-Tuned", port: 5001, vector_choice: "ds" },
+  { name: "Fine-Tuned", port: 5002, vector_choice: "v1" },
+  { name: "Fine-Tuned 2", port: 5003, vector_choice: "v2" },
 ];
 
 const SUBJECTS = [
@@ -119,7 +121,12 @@ async function runEvaluation() {
     for (const model of MODELS) {
       console.log(`🔍 [${model.name}] Evaluating: "${subject}"`);
 
-      const queryEmbedding = await generateEmbedding(subject, model.port);
+      let queryEmbedding;
+      if (model.name === "ada-2002") {
+        queryEmbedding = await generateAdaEmbedding(subject);
+      } else {
+        queryEmbedding = await generateEmbedding(subject, model.port);
+      }
 
       const { data, error } = await supabase.rpc("search_results_dynamic", {
         query_embedding: queryEmbedding,

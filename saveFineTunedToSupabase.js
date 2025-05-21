@@ -1,4 +1,6 @@
-const { generateEmbedding } = require("./embedders/danishBertEmbedder");
+const {
+  generateAdaEmbedding: generateEmbedding,
+} = require("./embedders/ada2002Embedder");
 const { createClient } = require("@supabase/supabase-js");
 
 require("dotenv").config();
@@ -9,40 +11,44 @@ const supabase = createClient(
 );
 
 fetchAfstemninger();
+
 async function fetchAfstemninger() {
-  const { data, error } = await supabase
-  .from("afstemninger_bert")
-  .select(`
-      id,
+  const { data, error } = await supabase.from("golden_standard").select(`
+    afstemning_id,
+    subject,
+    afstemninger_bert (
       titel,
       titelkort,
       resume
-  `)
-  .is("embedding_v3", null);
+    )
+  `);
 
   if (error) {
     console.error("Error fetching data:", error);
     return;
   }
+
   for (const row of data) {
-  const afstemningEmbedding = await generateNewAfstemningEmbedding(row);
-  console.log("Afstemning embedding:", afstemningEmbedding);
-  await saveAfstemningEmbedding(row.id, afstemningEmbedding);
-    }
+    const afstemningEmbedding = await generateNewAfstemningEmbedding(
+      row.afstemninger_bert
+    );
+    console.log("Afstemning embedding:", afstemningEmbedding);
+    await saveAfstemningEmbedding(row.afstemning_id, afstemningEmbedding);
 
-    /* if (subject) {
-      const subjectEmbedding = await generateNewSubjectEmbedding(subject);
+    if (row.subject) {
+      const subjectEmbedding = await generateNewSubjectEmbedding(row.subject);
       console.log("Subject embedding:", subjectEmbedding);
-      saveSubjectEmbedding(row.afstemning_id, subjectEmbedding);
-    } */
+      console.log(`Subject text: "${row.subject}"`);
+      await saveSubjectEmbedding(row.afstemning_id, subjectEmbedding);
+    }
   }
-
+}
 
 // Save subject embedding
 async function saveSubjectEmbedding(id, subjectEmbedding) {
   const { data, error } = await supabase
     .from("golden_standard")
-    .update({ subject_vector_after: subjectEmbedding })
+    .update({ subject_vector_ada: subjectEmbedding })
     .eq("afstemning_id", id);
 
   if (error) {
@@ -55,9 +61,9 @@ async function saveSubjectEmbedding(id, subjectEmbedding) {
 // Save afstemning embedding
 async function saveAfstemningEmbedding(id, afstemningEmbedding) {
   const { data, error } = await supabase
-    .from("afstemninger_bert")
-    .update({ embedding_v3: afstemningEmbedding })
-    .eq("id", id);
+    .from("golden_standard")
+    .update({ afstemning_vector_ada: afstemningEmbedding })
+    .eq("afstemning_id", id);
 
   if (error) {
     console.error("Error saving afstemning embedding:", error);
@@ -71,12 +77,10 @@ async function generateNewSubjectEmbedding(subject) {
 }
 
 async function generateNewAfstemningEmbedding(afstemning) {
-  const { titel, titelkort, resume } = afstemning;
-  const combinedText = `
-      Titel: ${titel || ""}
-      Titelkort: ${titelkort || ""}
-      Resume: ${resume || ""}
-    `;
-  const newEmbedding = await generateEmbedding(combinedText, 5003); //change according to model
+  const { titel, titelkort, resume } = afstemning || {};
+  const combinedText = `Titel: ${titel || ""} | Titelkort: ${
+    titelkort || ""
+  } | Resume: ${resume || ""}`;
+  const newEmbedding = await generateEmbedding(combinedText);
   return newEmbedding;
 }
